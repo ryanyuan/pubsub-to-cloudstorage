@@ -48,10 +48,10 @@ public class PubSubToCloudStoragePipeline {
         PCollection<String> messages;
 
         if(options.getUseSubscription()) {
-            messages = pipeline.apply("Read from Pub/Sub",
+            messages = pipeline.apply("Read from PubSub",
                     PubsubIO.readStrings().fromSubscription(options.getInputSubscription()));
         } else {
-            messages = pipeline.apply("Read from Pub/Sub",
+            messages = pipeline.apply("Read from PubSub",
                     PubsubIO.readStrings().fromTopic(options.getInputTopic()));
         }
 
