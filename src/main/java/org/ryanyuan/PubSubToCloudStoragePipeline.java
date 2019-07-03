@@ -6,11 +6,13 @@ import org.apache.beam.sdk.io.FileBasedSink;
 import org.apache.beam.sdk.io.TextIO;
 import org.apache.beam.sdk.io.fs.ResourceId;
 import org.apache.beam.sdk.io.gcp.pubsub.PubsubIO;
+import org.apache.beam.sdk.io.gcp.pubsub.PubsubMessage;
 import org.apache.beam.sdk.options.PipelineOptionsFactory;
 import org.apache.beam.sdk.options.ValueProvider;
 import org.apache.beam.sdk.transforms.SerializableFunction;
 import org.apache.beam.sdk.transforms.windowing.FixedWindows;
 import org.apache.beam.sdk.transforms.windowing.Window;
+import org.apache.beam.sdk.values.PCollection;
 import org.ryanyuan.io.WindowedFilenamePolicy;
 import org.ryanyuan.utils.DurationUtils;
 
@@ -43,9 +45,17 @@ public class PubSubToCloudStoragePipeline {
     public static PipelineResult run(PubSubToCloudStorageOptions options) {
         Pipeline pipeline = Pipeline.create(options);
 
-        pipeline.apply("Read from Pub/Sub",
-                        PubsubIO.readStrings().fromSubscription(options.getInputSubscription()))
-                .apply(String.format("Apply %s window", options.getWindowDuration()),
+        PCollection<String> messages;
+
+        if(options.getUseSubscription()) {
+            messages = pipeline.apply("Read from Pub/Sub",
+                    PubsubIO.readStrings().fromSubscription(options.getInputSubscription()));
+        } else {
+            messages = pipeline.apply("Read from Pub/Sub",
+                    PubsubIO.readStrings().fromTopic(options.getInputTopic()));
+        }
+
+        messages.apply(String.format("Apply %s window", options.getWindowDuration()),
                         Window.into(FixedWindows.of(DurationUtils.parseDuration(options.getWindowDuration()))))
                 .apply("Write to GCS",
                         TextIO.write()
