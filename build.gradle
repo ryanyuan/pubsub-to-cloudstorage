@@ -30,6 +30,7 @@ run {
             "--outputDirectory=${OUTPUT_DIR}",
             "--outputFilenamePrefix=${OUTPUT_FILENAME_PREFIX}",
             "--outputFilenameSuffix=${OUTPUT_FILENAME_SUFFIX}",
+            "--windowDuration=${WINDOW_DURATION}",
     ]
 }
 
